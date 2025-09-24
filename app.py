@@ -1,0 +1,82 @@
+# --- Sarcasm Detection Streamlit Web App ---
+# This script loads the pre-trained LSTM model and tokenizer
+# to create an interactive web application for sarcasm detection.
+
+import json
+import numpy as np
+import streamlit as st
+import tensorflow as tf
+from tensorflow.keras.preprocessing.text import tokenizer_from_json
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+# --- Load Model and Tokenizer ---
+# Use st.cache_resource to load the model and tokenizer only once
+@st.cache_resource
+def load_assets():
+    """Loads the pre-trained model and tokenizer."""
+    try:
+        model = tf.keras.models.load_model("sarcasm_model.h5")
+        with open('tokenizer.json') as f:
+            data = json.load(f)
+            tokenizer = tokenizer_from_json(data)
+        return model, tokenizer
+    except Exception as e:
+        st.error(f"Error loading assets: {e}")
+        st.error("Please make sure 'sarcasm_model.h5' and 'tokenizer.json' are in the same directory.")
+        st.stop()
+
+model, tokenizer = load_assets()
+
+# --- Prediction Function ---
+def predict_sarcasm(text, model, tokenizer):
+    """
+    Predicts sarcasm for a given text using the loaded model and tokenizer.
+    """
+    # Hyperparameters must match the training script
+    max_length = 40
+    trunc_type = 'post'
+    padding_type = 'post'
+
+    # Preprocess the text
+    sequence = tokenizer.texts_to_sequences([text])
+    padded_sequence = pad_sequences(sequence, maxlen=max_length, padding=padding_type, truncating=trunc_type)
+    
+    # Make prediction
+    prediction = model.predict(padded_sequence, verbose=0)
+    return prediction[0][0]
+
+# --- Streamlit App UI ---
+st.set_page_config(page_title="Sarcasm Detector", page_icon="😏")
+
+st.title("😏 Sarcasm Detector")
+st.write("Enter a headline or a short sentence below to see if the model thinks it's sarcastic.")
+
+# User input
+user_input = st.text_input("Enter your text here:", placeholder="e.g., I just love when my code works on the first try.")
+
+# Prediction button
+if st.button("Analyze"):
+    if user_input:
+        with st.spinner("Analyzing..."):
+            score = predict_sarcasm(user_input, model, tokenizer)
+            
+            st.write("") # Add a little space
+            
+            if score > 0.6:
+                st.success(f"**Result: Sarcastic** (Confidence: {score:.2%})")
+                st.markdown(f"> *“{user_input}”*")
+            elif score < 0.4:
+                st.info(f"**Result: Not Sarcastic** (Confidence: {(1-score):.2%})")
+                st.markdown(f"> *“{user_input}”*")
+            else:
+                st.warning(f"**Result: Unsure** (Sarcasm Score: {score:.2%})")
+                st.markdown(f"> *“{user_input}”*")
+    else:
+        st.warning("Please enter some text to analyze.")
+
+st.sidebar.header("About")
+st.sidebar.info(
+    "This web app uses a Long Short-Term Memory (LSTM) neural network "
+    "to detect sarcasm in text. The model was trained on the 'Sarcasm Headlines Dataset' "
+    "from Kaggle."
+)
