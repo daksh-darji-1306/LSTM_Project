@@ -75,6 +75,7 @@ model, tokenizer = load_assets()
 # --- Prediction Function ---
 def predict_sarcasm(text, model, tokenizer):
     """Predicts sarcasm for a given text sentence."""
+    # This max_length MUST match the one used in the training script
     max_length = 40
     sequence = tokenizer.texts_to_sequences([text])
     padded_sequence = pad_sequences(sequence, maxlen=max_length, padding='post', truncating='post')
@@ -90,8 +91,8 @@ st.sidebar.info(
     This app uses a **Long Short-Term Memory (LSTM)** neural network to analyze
     text and predict whether it's sarcastic.
     
-    The model was trained on the "News Headlines Dataset for Sarcasm Detection" from Kaggle,
-    which contains over 28,000 headlines from various sources.
+    The model was trained on the "Sarcasm Dataset" containing over 150,000 text samples,
+    which helps it understand more nuanced language.
     """
 )
 st.sidebar.markdown("---")
@@ -104,7 +105,7 @@ st.markdown("### Is your text sarcastic, or are you just kidding? Let's find out
 with st.expander("🤔 How does this work?"):
     st.write("""
         This tool uses a deep learning model called an LSTM (Long Short-Term Memory network). Here’s a simple breakdown:
-        1.  **Training:** The model was trained on thousands of news headlines, learning the patterns, word choices, and contexts that distinguish sarcastic text from non-sarcastic text.
+        1.  **Training:** The model was trained on thousands of text samples, learning the patterns, word choices, and contexts that distinguish sarcastic text from non-sarcastic text.
         2.  **Input:** When you enter a sentence, it's converted into a sequence of numbers that the model can understand.
         3.  **Prediction:** The LSTM processes this sequence, remembering the context, and outputs a "sarcasm score" between 0 (not sarcastic) and 1 (sarcastic).
     """)
