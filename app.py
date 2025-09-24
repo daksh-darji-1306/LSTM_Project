@@ -5,9 +5,9 @@
 import json
 import streamlit as st
 import tensorflow as tf
-from keras.models import load_model
-from keras.preprocessing.text import tokenizer_from_json
-from keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.text import tokenizer_from_json
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # --- Load Model and Tokenizer ---
 # Use st.cache_resource to load the model and tokenizer only once
